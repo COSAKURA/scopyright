@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/copyright?allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password:
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:/mapper/*.xml
+
+blockchain:
+  auditorAddress: 0x7cffcbeeb6628add0fe8d3bc6a809040d562318f
+
+
