@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * @author Sakura
  */
-@RestControllerAdvice
+// @RestControllerAdvice
 public class GlobalException {
 
     @ExceptionHandler(Exception.class)

@@ -68,4 +68,7 @@ import org.fisco.bcos.sdk.abi.datatypes.Int;
      * 申请是否通过
      */
     private Boolean copyrightApplied;
+
+  // 用于存储 BLOB 数据
+  private byte[] fileContent;
 }

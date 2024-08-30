@@ -4,6 +4,7 @@ import lltw.scopyright.VO.ResultVO;
 import lltw.scopyright.entity.Works;
 import com.baomidou.mybatisplus.extension.service.IService;
 import lltw.scopyright.form.UploadForm;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigInteger;
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.Map;
  */
 public interface WorksService extends IService<Works> {
 
-    ResultVO uploadWork(UploadForm uploadForm);
+    ResultVO uploadWork(Long createId,String title , String description , MultipartFile file);
 
     ResultVO showAll(Long creatorId);
 

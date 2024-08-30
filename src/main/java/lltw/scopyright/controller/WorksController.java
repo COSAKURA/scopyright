@@ -3,13 +3,12 @@ package lltw.scopyright.controller;
 
 import lltw.scopyright.VO.ResultVO;
 import lltw.scopyright.form.UploadForm;
-import lltw.scopyright.service.BlockchainService;
 import lltw.scopyright.service.WorksService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigInteger;
 /**
  * <p>
  *  前端控制器
@@ -51,13 +50,17 @@ public class WorksController {
 
     // 内容创作者上传作品接口
     @PostMapping("/creator/upload")
-    public ResultVO uploadWork(@RequestBody UploadForm uploadForm) {
-        return worksService.uploadWork(uploadForm);
+    public ResultVO uploadWork(@RequestParam("createId") Long createId ,@RequestParam("title") String title ,
+                               @RequestParam("description") String description , @RequestParam("file") MultipartFile file) {
+        log.info("++++++++++++++++++{}",file.getOriginalFilename());
+        return worksService.uploadWork(createId,title,
+                description,file);
     }
 
     // 内容创作者提交申请版权接口
     @GetMapping("/creator/appliedTrue")
     public ResultVO applicationTrue(@RequestParam("workId") Long workId) {
+
         return worksService.applicationTrue(workId);
     }
 

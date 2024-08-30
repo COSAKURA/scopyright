@@ -18,7 +18,9 @@ import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -52,24 +54,38 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
     }
 
     @Override
-    public ResultVO uploadWork(UploadForm uploadForm) {
-        Users user = usersMapper.selectById(uploadForm.getId());
+    public ResultVO uploadWork(Long createId,String title , String description, MultipartFile file) {
+        Users user = usersMapper.selectById(createId);
         if (user != null) {
             Works works = new Works();
-            works.setCreatorId(uploadForm.getId());
-            works.setTitle(uploadForm.getTitle());
-            works.setDescription(uploadForm.getDescription());
+            works.setCreatorId(createId);
+            works.setTitle(title);
+            works.setDescription(description);
 
+            // 处理文件上传
+            if (file != null && !file.isEmpty()) {
+                try {
+                    // 将文件内容转换为 byte[]
+                    byte[] fileContent = file.getBytes();
+                    works.setFileContent(fileContent); // 保存文件内容到数据库中的作品表
+                } catch (IOException e) {
+                    log.error("文件上传失败: {}", e.getMessage(), e);
+                    return ResultVO.error(-1, "文件上传失败：" + e.getMessage());
+                }
+            }
+
+            // 保存作品信息到数据库
             int rows = worksMapper.insert(works);
             if (rows > 0) {
-                // 作品上传成功后，将作品信息上链
+                // 作品上传成功后，将标题、描述和用户邮箱上链
                 try {
                     // 作品的标题和描述
-                    String title = uploadForm.getTitle();
-                    String description = uploadForm.getDescription();
+                    // String title = title;
+                    // String description = uploadForm.getDescription();
+                    String userEmail = user.getEmail();
 
-                    // 调用区块链服务，将作品信息上链
-                    TransactionReceipt receipt = blockchainService.registerWork(title, description, user.getEmail());
+                    // 调用区块链服务，将信息上链
+                    TransactionReceipt receipt = blockchainService.registerWork(title, description, userEmail);
 
                     if (receipt.isStatusOK()) {
                         log.info("作品上传成功，并成功上链。交易哈希: {}", receipt.getTransactionHash());
@@ -87,6 +103,7 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
         }
         return ResultVO.error(-2, "用户不存在");
     }
+
 
     @Override
     public ResultVO showAll(Long creatorId) {
