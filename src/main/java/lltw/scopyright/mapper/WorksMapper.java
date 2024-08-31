@@ -18,6 +18,6 @@ import java.util.List;
 @Mapper
 public interface WorksMapper extends BaseMapper<Works> {
 
-    @Select("SELECT * FROM works")
+    @Select("SELECT * FROM works WHERE status ='approved'")
     List<Works> selectFileContent();
 }

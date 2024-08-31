@@ -9,6 +9,11 @@ spring:
       enabled: true
       max-file-size: 100MB
       max-request-size: 100MB
+  mail:
+    username: 847070349@qq.com
+    password: mtxtchmbuippbeba
+    host: smtp.qq.com
+    port: 587
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

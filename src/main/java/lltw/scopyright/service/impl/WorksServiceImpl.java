@@ -12,10 +12,12 @@ import lltw.scopyright.mapper.WorksMapper;
 import lltw.scopyright.service.BlockchainService;
 import lltw.scopyright.service.WorksService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lltw.scopyright.utils.SendMail;
 import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple10;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,12 +45,15 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
     private final WorksMapper worksMapper;
     private final UsersMapper usersMapper;
     private final BlockchainService blockchainService;
+    private SendMail sender;
 
     @Autowired
-    public WorksServiceImpl(WorksMapper worksMapper, UsersMapper usersMapper,BlockchainService blockchainService){
+    public WorksServiceImpl(WorksMapper worksMapper, UsersMapper usersMapper,BlockchainService blockchainService ,
+                            SendMail sender){
         this.worksMapper = worksMapper;
         this.usersMapper = usersMapper;
         this.blockchainService = blockchainService;
+        this.sender = sender;
     }
 
     @Override
@@ -256,12 +261,32 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
                 // 将信息上链
                 TransactionReceipt receipt = blockchainService.reviewWork(work.getTitle(), true, copyrightNumber);
                 if (receipt.isStatusOK()) {
-                    log.info("版权申请审核通过，版权编号：{}，交易哈希：{}", copyrightNumber, receipt.getTransactionHash());
-                    return ResultVO.success("版权申请审核通过，数据已上链");
-                } else {
-                    log.error("版权申请审核通过，但上链失败。交易哈希：{}，状态码：{}", receipt.getTransactionHash(), receipt.getStatus());
-                    return ResultVO.success("版权申请审核通过，但上链失败");
+                    // 生成邮件内容
+                    String content = String.format(
+                            "<h1>版权申请通过</h1>" +
+                                    "<p>尊敬的用户，</p>" +
+                                    "<p>恭喜您的作品申请已通过！您的作品已成功上链并获得版权保护。</p>" +
+                                    "<p><strong>版权编号：</strong> %s</p>" +
+                                    "<p>您可以随时登录系统查看作品的详细信息。</p>" +
+                                    "<br>" +
+                                    "<p>感谢您对我们的信任与支持。</p>" +
+                                    "<p>此致</p>" +
+                                    "<p>版权保护团队</p>",
+                            copyrightNumber
+                    );
+                   // 获取用户邮箱
+                    Users user = usersMapper.selectById(work.getCreatorId());
+
+                    log.info("作品id++++++++++++++++++++: {}", work.getCreatorId());
+
+                    log.info("用户邮箱++++++++++++++++++++: {}", user.getEmail());
+
+                    String to = user.getEmail();
+                    // 发送邮件
+                    sender.sendSimpleMail( "版权申请通知",to, content);
+                    return ResultVO.success("版权申请通过，已上链并已发送邮件");
                 }
+                return ResultVO.success("版权申请审核通过，但上链失败");
             } else {
                 UpdateWrapper<Works> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("id", workId)
@@ -269,8 +294,22 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
                         .set("copyright_applied", false)
                         .set("updated_at", LocalDateTime.now());
                 worksMapper.update(null, updateWrapper);
+                // 生成邮件内容
+                String content = "<h1>版权申请通过</h1>" +
+                        "<p>尊敬的用户，</p>" +
+                        "<p>很遗憾，您的作品申请未通过！你的作品可能存在抄袭。</p>" +
+                        "<p>您可以随时登录系统查看作品的详细信息。</p>" +
+                        "<br>" +
+                        "<p>感谢您对我们的信任与支持。</p>" +
+                        "<p>此致</p>" +
+                        "<p>版权保护团队</p>";
+                // 获取用户邮箱
+                Users user = usersMapper.selectById(work.getCreatorId());
 
-                log.info("版权申请审核被拒绝");
+                String to = user.getEmail();
+                // 发送邮件
+                sender.sendSimpleMail( "版权申请通知",to, content);
+
                 return ResultVO.success("版权申请被拒绝");
             }
         } catch (Exception e) {

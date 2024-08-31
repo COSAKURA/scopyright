@@ -84,6 +84,4 @@ public class WorksController {
     public ResultVO queryCopyrightByTitle(@RequestParam("workId") Long workId) {
         return worksService.queryCopyrightByTitle(workId);
     }
-
-
 }
