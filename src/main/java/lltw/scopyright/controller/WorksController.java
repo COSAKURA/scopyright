@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * <p>
  *  前端控制器
@@ -82,5 +84,6 @@ public class WorksController {
     public ResultVO queryCopyrightByTitle(@RequestParam("workId") Long workId) {
         return worksService.queryCopyrightByTitle(workId);
     }
+
 
 }

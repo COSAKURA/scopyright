@@ -12,14 +12,16 @@ public class WorksDTO {
     private String description;
     private String status;
     private String creatorName;
+    private String fileContent;
 
     // 构造函数
-    public WorksDTO(Long id, String title, String description, String status, String creatorName) {
+    public WorksDTO(Long id, String title, String description, String status, String creatorName ,String fileContent) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.creatorName = creatorName;
+        this.fileContent = fileContent;
     }
 
 }

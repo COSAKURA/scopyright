@@ -7,6 +7,7 @@ import lltw.scopyright.form.UploadForm;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,4 +35,8 @@ public interface WorksService extends IService<Works> {
     ResultVO queryCopyrightByTitle(Long workId);
 
     ResultVO searchWorks(String title);
+
+    List<Works> getAllWorks();
+
+    Works getWorkById(Long id);
 }

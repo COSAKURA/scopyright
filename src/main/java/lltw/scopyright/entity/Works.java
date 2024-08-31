@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.io.Serializable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.fisco.bcos.sdk.abi.datatypes.Int;
 
 /**
  * <p>

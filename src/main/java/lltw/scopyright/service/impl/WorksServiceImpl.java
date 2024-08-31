@@ -22,11 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -54,7 +52,7 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
     }
 
     @Override
-    public ResultVO uploadWork(Long createId,String title , String description, MultipartFile file) {
+    public ResultVO uploadWork(Long createId, String title, String description, MultipartFile file) {
         Users user = usersMapper.selectById(createId);
         if (user != null) {
             Works works = new Works();
@@ -67,7 +65,9 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
                 try {
                     // 将文件内容转换为 byte[]
                     byte[] fileContent = file.getBytes();
-                    works.setFileContent(fileContent); // 保存文件内容到数据库中的作品表
+                    // 存储原始文件内容
+                    works.setFileContent(fileContent);
+                    // 保存文件内容到数据库中的作品表
                 } catch (IOException e) {
                     log.error("文件上传失败: {}", e.getMessage(), e);
                     return ResultVO.error(-1, "文件上传失败：" + e.getMessage());
@@ -79,9 +79,6 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
             if (rows > 0) {
                 // 作品上传成功后，将标题、描述和用户邮箱上链
                 try {
-                    // 作品的标题和描述
-                    // String title = title;
-                    // String description = uploadForm.getDescription();
                     String userEmail = user.getEmail();
 
                     // 调用区块链服务，将信息上链
@@ -118,16 +115,20 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
     @Override
     public ResultVO getAllWorksWithCreatorName() {
         QueryWrapper<Works> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("copyright_applied", 1);
+        queryWrapper.in("status", Arrays.asList("approved", "rejected", "pending"));
         // 查询所有作品
         List<Works> worksList = worksMapper.selectList(queryWrapper);
 
+
         // 对每个作品查询对应的内容创作者
-        List<WorksDTO> worksWithCreatorName = worksList.stream().map(work -> {
-            Users creator = usersMapper.selectById(work.getCreatorId());
-            return new WorksDTO(work.getId(), work.getTitle(),work.getDescription(), work.getStatus(),
-                    creator.getUsername());
-        }).collect(Collectors.toList());
+        List<WorksDTO> worksWithCreatorName = new ArrayList<>();
+        for (Works works : worksList) {
+            Users creator = usersMapper.selectById(works.getCreatorId());
+            String fileContent = new String(works.getFileContent(), StandardCharsets.UTF_8);
+            WorksDTO apply = new WorksDTO(works.getId(), works.getTitle(), works.getDescription(), works.getStatus(),
+                    creator.getUsername(), fileContent);
+            worksWithCreatorName.add(apply);
+        }
 
         return ResultVO.success(worksWithCreatorName);
     }
@@ -171,6 +172,18 @@ public class WorksServiceImpl extends ServiceImpl<WorksMapper, Works> implements
         return ResultVO.error(-1, "查询作品失败，作品不存在");
 
     }
+
+    // 获取全部作品进行查重
+    @Override
+    public List<Works> getAllWorks() {
+        return worksMapper.selectFileContent();
+    }
+
+    @Override
+    public Works getWorkById(Long id) {
+        return worksMapper.selectById(id);
+    }
+
 
     /**
      * 用户申请作品版权

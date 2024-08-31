@@ -3,6 +3,9 @@ package lltw.scopyright.mapper;
 import lltw.scopyright.entity.Works;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * <p>
@@ -15,4 +18,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface WorksMapper extends BaseMapper<Works> {
 
+    @Select("SELECT * FROM works")
+    List<Works> selectFileContent();
 }
