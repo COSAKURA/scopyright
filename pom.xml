@@ -84,6 +84,20 @@
             <artifactId>fisco-bcos-java-sdk</artifactId>
             <version>2.9.1</version>
         </dependency>
+
+        <!-- Other dependencies -->
+
+        <!-- Jieba Analysis for Chinese Text Segmentation -->
+        <!-- https://mvnrepository.com/artifact/com.huaban/jieba-analysis -->
+        <dependency>
+            <groupId>com.huaban</groupId>
+            <artifactId>jieba-analysis</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
+
+
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
